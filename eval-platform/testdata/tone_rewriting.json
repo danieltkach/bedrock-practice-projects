@@ -1,0 +1,49 @@
+{
+  "category": "tone_rewriting",
+  "group": "language",
+  "description": "Rewrite text in a different tone while keeping every fact.",
+  "tests": [
+    {
+      "prompt": "Rewrite this message so it is polite and professional, keeping all the facts. Output only the rewritten message.\n\n'Your team messed up AGAIN. The report is 3 days late and the numbers are wrong. Fix it by Friday or I am going to your boss.'",
+      "checks": [
+        {
+          "type": "regex",
+          "pattern": "Friday"
+        },
+        {
+          "type": "regex",
+          "pattern": "(3|three) days"
+        },
+        {
+          "type": "not_contains",
+          "values": [
+            "messed up"
+          ]
+        }
+      ],
+      "rubric": "Professional, courteous tone with no insults or threats. Keeps facts: report is 3 days late, numbers are incorrect, deadline Friday. May mention escalation politely but must not sound threatening.",
+      "reference": "Hello, the report is now three days overdue and the figures need to be corrected. Could your team please send a corrected version by Friday? Thank you for your help.",
+      "max_tokens": 250,
+      "id": "tone_rewriting-1",
+      "judge": true
+    },
+    {
+      "prompt": "Make this friendly and casual, as a text message of at most 25 words. Output only the message.\n\n'We regret to inform you that the event has been postponed until further notice.'",
+      "checks": [
+        {
+          "type": "max_words",
+          "value": 25
+        },
+        {
+          "type": "regex",
+          "pattern": "(postpone|delayed|on hold|pushed|off for now)"
+        }
+      ],
+      "rubric": "Casual, friendly text-message tone; conveys that the event is postponed with no new date yet; at most 25 words; no corporate phrasing.",
+      "reference": "Hey! Bit of bad news: the event is postponed for now. We'll let you know as soon as we have a new date!",
+      "max_tokens": 120,
+      "id": "tone_rewriting-2",
+      "judge": true
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "category": "summarization",
+  "group": "language",
+  "description": "Summarize short invented texts under a length or format limit.",
+  "tests": [
+    {
+      "prompt": "Summarize the following article in exactly two sentences and no more than 45 words in total.\n\nARTICLE:\nThe town council of Marlow Creek voted 5-2 on Tuesday to extend the opening hours of the public library. From next month the library will open until 9 p.m. on weekdays, up from 6 p.m., and will add a Sunday session from noon to 4 p.m. Council member Ines Albrecht, who proposed the change, said that surveys showed many working residents could not visit during the day. The extension will cost about $38,000 per year, paid from the existing culture budget without raising taxes. Two council members opposed the plan, arguing that the money would be better spent on repairing the town's footbridge. Librarian Tomas Reyes welcomed the decision and said he would hire two part-time staff members to cover the evening shifts.",
+      "checks": [
+        {
+          "type": "sentence_count",
+          "value": 2
+        },
+        {
+          "type": "max_words",
+          "value": 45
+        }
+      ],
+      "rubric": "The summary must state the key decision (library hours extended, weekday closing 9 p.m., Sunday session), may mention cost or opposition, and contain no invented facts. Exactly two sentences, max 45 words.",
+      "reference": "Marlow Creek's council voted 5-2 to extend library hours to 9 p.m. on weekdays and add Sunday sessions. The $38,000 yearly cost comes from the existing culture budget.",
+      "max_tokens": 200,
+      "id": "summarization-1",
+      "judge": true
+    },
+    {
+      "prompt": "Turn these meeting notes into exactly three bullet points (each starting with '- '): one per decision or action item. No other text.\n\nNOTES:\nWeekly product sync, Monday. Priya reported that the mobile app crash rate fell from 2.1% to 0.8% after last week's patch. Diego said the new onboarding flow is two days behind schedule because the design assets arrived late; he expects to finish by Thursday. Marta raised a concern that support tickets about billing are rising and asked for a root-cause review; the group agreed Marta will lead it and report next Monday. The team also decided to postpone the dark-mode feature to the next quarter so engineers can focus on stability.",
+      "checks": [
+        {
+          "type": "regex_count",
+          "pattern": "^\\s*[-*•]\\s+",
+          "count": 3
+        }
+      ],
+      "rubric": "Exactly three bullets that capture: onboarding flow delay (finish Thursday), Marta leading the billing root-cause review (report next Monday), dark mode postponed to next quarter. Crash-rate improvement may be folded in. No invented facts.",
+      "reference": "- Onboarding flow is two days behind; Diego expects to finish by Thursday.\n- Marta will lead a root-cause review of rising billing tickets and report next Monday.\n- Dark-mode feature is postponed to next quarter to focus on stability.",
+      "max_tokens": 250,
+      "id": "summarization-2",
+      "judge": true
+    }
+  ]
+}

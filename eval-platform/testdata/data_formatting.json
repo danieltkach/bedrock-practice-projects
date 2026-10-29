@@ -1,0 +1,52 @@
+{
+  "category": "data_formatting",
+  "group": "structured",
+  "description": "Convert data between formats exactly.",
+  "tests": [
+    {
+      "prompt": "Convert this CSV to a JSON array of objects (numbers as JSON numbers). Output only JSON.\n\nid,name,qty\n1,widget,4\n2,gadget,10",
+      "checks": [
+        {
+          "type": "json_fields",
+          "expected": [
+            {
+              "id": 1,
+              "name": "widget",
+              "qty": 4
+            },
+            {
+              "id": 2,
+              "name": "gadget",
+              "qty": 10
+            }
+          ]
+        }
+      ],
+      "judge": false,
+      "max_tokens": 200,
+      "reference": "[{\"id\": 1, \"name\": \"widget\", \"qty\": 4}, {\"id\": 2, \"name\": \"gadget\", \"qty\": 10}]",
+      "id": "data_formatting-1"
+    },
+    {
+      "prompt": "Reformat these dates from DD/MM/YYYY to YYYY-MM-DD, one per line, nothing else:\n03/11/2024\n25/12/2023\n01/02/2025",
+      "checks": [
+        {
+          "type": "line_count",
+          "value": 3
+        },
+        {
+          "type": "contains",
+          "values": [
+            "2024-11-03",
+            "2023-12-25",
+            "2025-02-01"
+          ]
+        }
+      ],
+      "judge": false,
+      "max_tokens": 100,
+      "reference": "2024-11-03\n2023-12-25\n2025-02-01",
+      "id": "data_formatting-2"
+    }
+  ]
+}

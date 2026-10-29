@@ -1,0 +1,4 @@
+boto3==1.43.118
+botocore[crt]==1.43.118
+pypdf==6.21.2
+numpy==2.5.4

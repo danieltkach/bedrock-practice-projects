@@ -1,0 +1,531 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LLM Evaluation Dashboard</title>
+<style>
+:root {
+  --bg: #f6f7f9; --card: #ffffff; --text: #1d2330; --muted: #5d6677; --line: #dde1e8;
+  --accent: #0b6bcb; --heat: 11, 107, 203; --on-heat: #ffffff; --warn-bg: #fff4d6; --warn-text: #5c4300;
+  --c-q: #5b6ee1; --c-c: #d9962b; --c-l: #2f9e75;
+  --m0: #0072B2; --m1: #D55E00; --m2: #009E73; --m3: #CC79A7; --m4: #B8860B; --m5: #56B4E9; --m6: #6b7280;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12151b; --card: #1b2029; --text: #e6e9ef; --muted: #9aa3b2; --line: #2d3442;
+    --accent: #6cb4f5; --heat: 108, 180, 245; --on-heat: #06131f; --warn-bg: #3a3014; --warn-text: #f2deaa;
+    --c-q: #8c9bff; --c-c: #f0b44f; --c-l: #4cc79a;
+    --m0: #4aa3df; --m1: #f08a4b; --m2: #2fcf9f; --m3: #e59cc4; --m4: #e0b84a; --m5: #7cc7f2; --m6: #a0a7b4;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12151b; --card: #1b2029; --text: #e6e9ef; --muted: #9aa3b2; --line: #2d3442;
+  --accent: #6cb4f5; --heat: 108, 180, 245; --on-heat: #06131f; --warn-bg: #3a3014; --warn-text: #f2deaa;
+  --c-q: #8c9bff; --c-c: #f0b44f; --c-l: #4cc79a;
+  --m0: #4aa3df; --m1: #f08a4b; --m2: #2fcf9f; --m3: #e59cc4; --m4: #e0b84a; --m5: #7cc7f2; --m6: #a0a7b4;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+header, main { max-width: 1240px; margin: 0 auto; padding: 0 16px; }
+header { padding-top: 22px; }
+h1 { font-size: 1.5rem; margin: 0 0 4px; }
+h2 { font-size: 1.05rem; margin: 0 0 10px; }
+.sub { color: var(--muted); margin: 0 0 12px; font-size: .9rem; }
+.banner { background: var(--warn-bg); color: var(--warn-text); border-radius: 8px; padding: 8px 12px; margin: 8px 0; font-size: .9rem; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin: 14px 0; min-width: 0; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.grid2 .card { margin: 0; }
+@media (max-width: 900px) { .grid2 { grid-template-columns: 1fr; } }
+.controls { display: grid; grid-template-columns: 1fr; gap: 12px; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.row label.lbl { color: var(--muted); font-size: .85rem; min-width: 64px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; cursor: pointer; user-select: none; background: transparent; color: var(--text); font: inherit; font-size: .85rem; }
+.chip[aria-pressed="false"] { opacity: .45; }
+.dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+select, input[type="search"] { background: var(--card); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 5px 8px; font: inherit; font-size: .9rem; }
+.sliders { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+@media (max-width: 700px) { .sliders { grid-template-columns: 1fr; } }
+.sliders label { display: block; font-size: .85rem; color: var(--muted); }
+.sliders input { width: 100%; }
+.kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 14px 0; }
+@media (max-width: 900px) { .kpis { grid-template-columns: repeat(2, 1fr); } }
+.kpi { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; min-width: 0; }
+.kpi .t { color: var(--muted); font-size: .8rem; }
+.kpi .v { font-size: 1.15rem; font-weight: 650; overflow-wrap: anywhere; }
+.kpi .d { color: var(--muted); font-size: .8rem; }
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: .88rem; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th button { all: unset; cursor: pointer; font-weight: 650; }
+th button:hover, th button:focus-visible { text-decoration: underline; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+tr.clickable { cursor: pointer; }
+tr.clickable:hover { background: rgba(var(--heat), .08); }
+tr.detail td { background: rgba(var(--heat), .05); }
+pre { white-space: pre-wrap; overflow-wrap: anywhere; margin: 4px 0 10px; font: .82rem/1.4 ui-monospace, Menlo, Consolas, monospace; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px; max-height: 260px; overflow: auto; }
+.heat td.cell { text-align: center; font-variant-numeric: tabular-nums; min-width: 64px; }
+.heat td.cell.hi { color: var(--on-heat); }
+.heat td.cell.win { outline: 2px solid var(--text); outline-offset: -2px; font-weight: 700; }
+.heat th.vert { font-weight: 600; }
+svg text { fill: var(--text); font-size: 11px; }
+svg .muted { fill: var(--muted); }
+svg .axis { stroke: var(--line); }
+svg .grid { stroke: var(--line); stroke-dasharray: 2 3; }
+#tip { position: fixed; pointer-events: none; display: none; background: var(--text); color: var(--bg); padding: 5px 9px; border-radius: 6px; font-size: .8rem; max-width: 320px; z-index: 9; white-space: pre-line; }
+.legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: .8rem; color: var(--muted); margin-top: 6px; }
+.note { color: var(--muted); font-size: .82rem; margin: 8px 0 0; }
+footer { max-width: 1240px; margin: 0 auto; padding: 0 16px 30px; color: var(--muted); font-size: .8rem; }
+</style>
+</head>
+<body>
+<header>
+  <h1>LLM Evaluation Dashboard</h1>
+  <p class="sub" id="metaLine"></p>
+  <div id="mockBanner" class="banner" hidden>Demo data from the offline mock client: the numbers are fake and only show how the dashboard works.</div>
+</header>
+<main>
+  <section class="card controls" aria-label="Filters and weights">
+    <div class="row"><label class="lbl">Models</label><span id="modelChips" class="row"></span></div>
+    <div class="row">
+      <label class="lbl" for="groupSel">Group</label><select id="groupSel"></select>
+      <label class="lbl" for="catSel">Category</label><select id="catSel"></select>
+      <button class="chip" id="resetBtn" type="button">Reset filters</button>
+    </div>
+    <div class="sliders">
+      <label>Quality weight <b id="wqv"></b><input id="wq" type="range" min="0" max="100" step="5"></label>
+      <label>Cost weight <b id="wcv"></b><input id="wc" type="range" min="0" max="100" step="5"></label>
+      <label>Latency weight <b id="wlv"></b><input id="wl" type="range" min="0" max="100" step="5"></label>
+    </div>
+    <p class="note" style="margin:0">Everything below recomputes live from the filters and weights. Cost and latency scores are normalized across the models currently selected.</p>
+  </section>
+
+  <section class="kpis" id="kpis" aria-label="Recommendations"></section>
+
+  <section class="card"><h2>Overall ranking <span class="sub">(click a column header to sort)</span></h2><div class="tablewrap"><table id="rankTable"></table></div></section>
+
+  <div class="grid2">
+    <section class="card"><h2>Quality vs cost</h2><div id="scatter"></div><p class="note">Up and left is better. X axis is logarithmic. Vertical bars: 95% interval of quality across categories.</p></section>
+    <section class="card"><h2>Latency per call</h2><div id="latency"></div><p class="note">Bar = median seconds, tick = 95th percentile.</p></section>
+  </div>
+
+  <section class="card"><h2>Aggregate score breakdown</h2><div id="stack"></div>
+    <div class="legend"><span><span class="dot" style="background:var(--c-q)"></span> quality x weight</span><span><span class="dot" style="background:var(--c-c)"></span> cost score x weight</span><span><span class="dot" style="background:var(--c-l)"></span> latency score x weight</span></div></section>
+
+  <section class="card"><h2>Category heatmap <span class="sub">(quality 0 to 1; outlined cell = category winner; click a category to filter)</span></h2><div class="tablewrap"><table class="heat" id="heat"></table></div></section>
+
+  <section class="card"><h2>Per-category winners</h2><div class="tablewrap"><table id="winTable"></table></div></section>
+
+  <section class="card"><h2>All results <span class="sub" id="resCount"></span></h2>
+    <div class="row" style="margin-bottom:8px"><input type="search" id="search" placeholder="Search model, category, test or response text" aria-label="Search results" size="42"></div>
+    <div class="tablewrap"><table id="resTable"></table></div></section>
+</main>
+<footer>Generated by eval-platform. Costs use hand-typed price estimates. Single small sample: treat small differences as noise. Judge scores come from an LLM and may carry bias.</footer>
+<div id="tip" role="tooltip"></div>
+
+<script>
+const DATA = /*__DATA__*/null;
+
+// ==== CORE START (pure functions, a Python test compares them with scoring.py) ================
+function normalizeWeights(w) {
+  const keys = ["quality", "cost", "latency"];
+  const total = keys.reduce((s, k) => s + Math.max(0, w[k]), 0);
+  const out = {};
+  keys.forEach(k => { out[k] = total <= 0 ? 1 / keys.length : Math.max(0, w[k]) / total; });
+  return out;
+}
+function mean(a) { return a.length ? a.reduce((s, x) => s + x, 0) / a.length : 0; }
+function median(a) {
+  if (!a.length) return 0;
+  const s = a.slice().sort((x, y) => x - y), m = Math.floor(s.length / 2);
+  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+}
+function percentile(a, p) {
+  if (!a.length) return 0;
+  const s = a.slice().sort((x, y) => x - y);
+  const rank = Math.max(1, Math.ceil(p / 100 * s.length));
+  return s[rank - 1];
+}
+function stdev(a) {
+  if (a.length < 2) return 0;
+  const m = mean(a);
+  return Math.sqrt(a.reduce((s, x) => s + (x - m) * (x - m), 0) / (a.length - 1));
+}
+function minMaxScore(value, low, high, logScale) {
+  if (high === low) return 1;
+  if (logScale) { value = Math.log(Math.max(value, 1e-9)); low = Math.log(Math.max(low, 1e-9)); high = Math.log(Math.max(high, 1e-9)); }
+  return 1 - (value - low) / (high - low);
+}
+function summarize(rows, weights, modelSet, catSet) {
+  const w = normalizeWeights(weights);
+  const used = rows.filter(r => (!modelSet || modelSet.has(r.model)) && (!catSet || catSet.has(r.category)));
+  const names = Array.from(new Set(used.map(r => r.model))).sort();
+  const cats = Array.from(new Set(used.map(r => r.category))).sort();
+  const groupOf = {};
+  used.forEach(r => { groupOf[r.category] = r.group; });
+  const per = {}, catScores = {}, groupScores = {};
+  names.forEach(name => {
+    const mine = used.filter(r => r.model === name);
+    const byCat = {};
+    mine.forEach(r => { if (r.quality !== null) (byCat[r.category] = byCat[r.category] || []).push(r.quality); });
+    catScores[name] = {};
+    Object.keys(byCat).forEach(c => { catScores[name][c] = mean(byCat[c]); });
+    const catMeans = Object.values(catScores[name]);
+    const billed = mine.filter(r => r.errorKind !== "api");
+    const good = mine.filter(r => r.ok);
+    const lat = good.map(r => r.latency);
+    per[name] = {
+      nCalls: mine.length,
+      quality: mean(catMeans),
+      qualityCi: catMeans.length > 1 ? 1.96 * stdev(catMeans) / Math.sqrt(catMeans.length) : 0,
+      costPerCall: mean(billed.map(r => r.cost)),
+      totalCost: billed.reduce((s, r) => s + r.cost, 0),
+      latencyMedian: median(lat), latencyP95: percentile(lat, 95),
+      errorRate: mine.length ? (mine.length - good.length) / mine.length : 0,
+    };
+    const groups = {};
+    Object.keys(catScores[name]).forEach(c => { (groups[groupOf[c]] = groups[groupOf[c]] || []).push(catScores[name][c]); });
+    groupScores[name] = {};
+    Object.keys(groups).forEach(g => { groupScores[name][g] = mean(groups[g]); });
+  });
+  const costs = names.map(n => per[n].costPerCall), lats = names.map(n => per[n].latencyMedian);
+  names.forEach(n => {
+    const m = per[n];
+    m.costScore = minMaxScore(m.costPerCall, Math.min(...costs), Math.max(...costs), true);
+    m.latencyScore = minMaxScore(m.latencyMedian, Math.min(...lats), Math.max(...lats), false);
+    m.partQ = w.quality * m.quality; m.partC = w.cost * m.costScore; m.partL = w.latency * m.latencyScore;
+    m.aggregate = m.partQ + m.partC + m.partL;
+  });
+  const ranking = names.slice().sort((a, b) => per[b].aggregate - per[a].aggregate);
+  return { weights: w, models: per, categories: cats, groupOf: groupOf, categoryScores: catScores, groupScores: groupScores, ranking: ranking };
+}
+function categoryWinners(sum, tieMargin) {
+  const out = {};
+  sum.categories.forEach(cat => {
+    const scores = {};
+    Object.keys(sum.categoryScores).forEach(m => { if (cat in sum.categoryScores[m]) scores[m] = sum.categoryScores[m][cat]; });
+    const ms = Object.keys(scores);
+    if (!ms.length) return;
+    const best = Math.max(...ms.map(m => scores[m]));
+    const tied = ms.filter(m => best - scores[m] <= tieMargin).sort();
+    const winner = tied.slice().sort((a, b) => (sum.models[a].costPerCall - sum.models[b].costPerCall) || (a < b ? -1 : 1))[0];
+    out[cat] = { winner: winner, quality: scores[winner], tied: tied };
+  });
+  return out;
+}
+function recommendations(sum, rules) {
+  const names = sum.ranking;
+  if (!names.length) return {};
+  const bestQ = Math.max(...names.map(n => sum.models[n].quality));
+  const okValue = names.filter(n => sum.models[n].quality >= rules.valueRatio * bestQ);
+  const okFast = names.filter(n => sum.models[n].quality >= rules.fastRatio * bestQ);
+  const pick = (list, key) => list.slice().sort((a, b) => sum.models[a][key] - sum.models[b][key])[0];
+  return { overall: names[0], value: pick(okValue, "costPerCall"), fast: pick(okFast, "latencyMedian"),
+           quality: names.slice().sort((a, b) => sum.models[b].quality - sum.models[a].quality)[0] };
+}
+// ==== CORE END ==============================================================================
+
+// ---------- helpers ----------
+const $ = id => document.getElementById(id);
+const SVGNS = "http://www.w3.org/2000/svg";
+function h(tag, attrs, ...kids) {
+  const el = document.createElement(tag);
+  Object.entries(attrs || {}).forEach(([k, v]) => { if (k === "class") el.className = v; else if (k === "text") el.textContent = v; else el.setAttribute(k, v); });
+  kids.forEach(k => { if (k !== null && k !== undefined) el.append(k.nodeType ? k : document.createTextNode(String(k))); });
+  return el;
+}
+function s(tag, attrs, text) {
+  const el = document.createElementNS(SVGNS, tag);
+  Object.entries(attrs || {}).forEach(([k, v]) => el.setAttribute(k, v));
+  if (text !== undefined) el.textContent = text;
+  return el;
+}
+const label = m => (DATA.models[m] ? DATA.models[m].label : m);
+const fmtCost = x => x < 0.01 ? "$" + x.toFixed(5) : "$" + x.toFixed(4);
+const fmt3 = x => x.toFixed(3);
+const allModels = Array.from(new Set(DATA.rows.map(r => r.model))).sort((a, b) => Object.keys(DATA.models).indexOf(a) - Object.keys(DATA.models).indexOf(b));
+const colorOf = m => "var(--m" + (allModels.indexOf(m) % 7) + ")";
+const allCats = Array.from(new Set(DATA.rows.map(r => r.category))).sort();
+const groupOfCat = {}; DATA.rows.forEach(r => { groupOfCat[r.category] = r.group; });
+const allGroups = Array.from(new Set(Object.values(groupOfCat))).sort();
+
+const state = {
+  models: new Set(allModels), group: "all", category: "all",
+  weights: Object.assign({}, DATA.weights),
+  sort: { rank: ["aggregate", -1], res: ["quality", 1], win: ["category", 1] },
+  search: "", open: new Set(),
+};
+
+function catSet() {
+  if (state.category !== "all") return new Set([state.category]);
+  if (state.group !== "all") return new Set(allCats.filter(c => groupOfCat[c] === state.group));
+  return null;
+}
+function filteredRows() {
+  const cs = catSet();
+  return DATA.rows.filter(r => state.models.has(r.model) && (!cs || cs.has(r.category)));
+}
+
+// tooltip: any element with data-tip shows it
+const tip = $("tip");
+document.addEventListener("mousemove", e => {
+  const t = e.target.closest ? e.target.closest("[data-tip]") : null;
+  if (!t) { tip.style.display = "none"; return; }
+  tip.textContent = t.getAttribute("data-tip");
+  tip.style.display = "block";
+  tip.style.left = Math.min(e.clientX + 14, window.innerWidth - 330) + "px";
+  tip.style.top = (e.clientY + 14) + "px";
+});
+
+// sortable table builder: columns = [{key, title, num, get(row), render(row)}]
+function buildTable(table, columns, rows, sortKey, onSort, rowAttrs) {
+  table.replaceChildren();
+  const key = sortKey[0], dir = sortKey[1];
+  const col = columns.find(c => c.key === key) || columns[0];
+  const sorted = rows.slice().sort((a, b) => {
+    const x = col.get(a), y = col.get(b);
+    if (x === y) return 0;
+    if (x === null || x === undefined) return 1;
+    if (y === null || y === undefined) return -1;
+    return (x < y ? -1 : 1) * dir;
+  });
+  const head = h("tr");
+  columns.forEach(c => {
+    const arrow = c.key === key ? (dir > 0 ? " ▲" : " ▼") : "";
+    const btn = h("button", { type: "button", text: c.title + arrow });
+    btn.addEventListener("click", () => onSort(c.key === key ? [key, -dir] : [c.key, c.num ? -1 : 1]));
+    head.append(h("th", { scope: "col", class: c.num ? "num" : "", "aria-sort": c.key === key ? (dir > 0 ? "ascending" : "descending") : "none" }, btn));
+  });
+  table.append(h("thead", {}, head));
+  const body = h("tbody");
+  sorted.forEach(r => {
+    const tr = h("tr", rowAttrs ? rowAttrs(r) : {});
+    columns.forEach(c => { const td = h("td", { class: c.num ? "num" : "" }); const v = c.render ? c.render(r) : c.get(r); td.append(v.nodeType ? v : document.createTextNode(String(v))); tr.append(td); });
+    body.append(tr);
+    if (rowAttrs && r._detail && state.open.has(r._detailKey)) body.append(r._detail());
+  });
+  table.append(body);
+}
+const modelCell = m => h("span", {}, h("span", { class: "dot", style: "background:" + colorOf(m) }), " " + label(m));
+
+// ---------- sections ----------
+function renderControls() {
+  const chips = $("modelChips"); chips.replaceChildren();
+  allModels.forEach(m => {
+    const b = h("button", { class: "chip", type: "button", "aria-pressed": state.models.has(m) ? "true" : "false" },
+      h("span", { class: "dot", style: "background:" + colorOf(m) }), label(m));
+    b.addEventListener("click", () => { if (state.models.has(m)) { if (state.models.size > 1) state.models.delete(m); } else state.models.add(m); renderAll(); });
+    chips.append(b);
+  });
+  const g = $("groupSel"); g.replaceChildren(h("option", { value: "all", text: "All groups" }));
+  allGroups.forEach(x => g.append(h("option", { value: x, text: x })));
+  g.value = state.group;
+  const c = $("catSel"); c.replaceChildren(h("option", { value: "all", text: "All categories" }));
+  allCats.filter(x => state.group === "all" || groupOfCat[x] === state.group).forEach(x => c.append(h("option", { value: x, text: x })));
+  c.value = state.category;
+}
+function renderWeights() {
+  const w = normalizeWeights(state.weights);
+  [["q", "quality"], ["c", "cost"], ["l", "latency"]].forEach(([k, name]) => {
+    $("w" + k + "v").textContent = Math.round(w[name] * 100) + "%";
+  });
+}
+function renderKpis(sum) {
+  const box = $("kpis"); box.replaceChildren();
+  const rec = recommendations(sum, DATA.rules);
+  const items = [["Best overall", rec.overall, m => "aggregate " + fmt3(m.aggregate)],
+                 ["Best value", rec.value, m => "quality " + fmt3(m.quality) + ", " + fmtCost(m.costPerCall) + "/call"],
+                 ["Fastest acceptable", rec.fast, m => "median " + m.latencyMedian.toFixed(2) + "s, quality " + fmt3(m.quality)],
+                 ["Highest quality", rec.quality, m => "quality " + fmt3(m.quality)]];
+  items.forEach(([t, m, d]) => {
+    if (!m) return;
+    box.append(h("div", { class: "kpi" }, h("div", { class: "t", text: t }), h("div", { class: "v" }, modelCell(m)), h("div", { class: "d", text: d(sum.models[m]) })));
+  });
+}
+function renderRank(sum) {
+  const rows = sum.ranking.map((n, i) => Object.assign({ name: n, rank: i + 1 }, sum.models[n]));
+  const cols = [
+    { key: "rank", title: "#", num: true, get: r => r.rank },
+    { key: "name", title: "Model", get: r => label(r.name), render: r => modelCell(r.name) },
+    { key: "aggregate", title: "Aggregate", num: true, get: r => r.aggregate, render: r => fmt3(r.aggregate) },
+    { key: "quality", title: "Quality", num: true, get: r => r.quality, render: r => fmt3(r.quality) + " ±" + r.qualityCi.toFixed(3) },
+    { key: "cost", title: "Cost / call", num: true, get: r => r.costPerCall, render: r => fmtCost(r.costPerCall) },
+    { key: "lat", title: "Median latency", num: true, get: r => r.latencyMedian, render: r => r.latencyMedian.toFixed(2) + "s" },
+    { key: "p95", title: "p95", num: true, get: r => r.latencyP95, render: r => r.latencyP95.toFixed(2) + "s" },
+    { key: "err", title: "Failed", num: true, get: r => r.errorRate, render: r => Math.round(r.errorRate * 100) + "%" },
+  ];
+  buildTable($("rankTable"), cols, rows, state.sort.rank, k => { state.sort.rank = k; renderRank(sum); });
+}
+
+// charts ---------------------------------------------------------------------------------------
+function chartWidth(el) { return Math.max(300, el.clientWidth || 560); }
+function renderScatter(sum) {
+  const box = $("scatter"); box.replaceChildren();
+  const names = sum.ranking; if (!names.length) return;
+  const W = chartWidth(box), H = 320, L = 46, R = 16, T = 14, B = 40;
+  const svg = s("svg", { viewBox: `0 0 ${W} ${H}`, width: "100%", role: "img", "aria-label": "Scatter plot of quality versus cost per call" });
+  const cost = n => Math.max(sum.models[n].costPerCall, 1e-7);
+  const lo = Math.log10(Math.min(...names.map(cost))), hi = Math.log10(Math.max(...names.map(cost)));
+  const x0 = Math.floor(lo - 0.15), x1 = Math.ceil(hi + 0.15) === Math.floor(lo - 0.15) ? x0 + 1 : Math.ceil(hi + 0.15);
+  const qs = names.map(n => sum.models[n].quality);
+  const y0 = Math.max(0, Math.floor((Math.min(...qs) - 0.1) * 10) / 10), y1 = Math.min(1, Math.ceil((Math.max(...qs) + 0.05) * 10) / 10) || 1;
+  const X = v => L + (Math.log10(v) - x0) / (x1 - x0) * (W - L - R);
+  const Y = v => T + (1 - (v - y0) / (y1 - y0)) * (H - T - B);
+  for (let t = y0; t <= y1 + 1e-9; t += 0.1) { svg.append(s("line", { x1: L, x2: W - R, y1: Y(t), y2: Y(t), class: "grid" })); svg.append(s("text", { x: L - 6, y: Y(t) + 4, "text-anchor": "end", class: "muted" }, t.toFixed(1))); }
+  for (let e = x0; e <= x1; e++) { svg.append(s("line", { x1: X(Math.pow(10, e)), x2: X(Math.pow(10, e)), y1: T, y2: H - B, class: "grid" })); svg.append(s("text", { x: X(Math.pow(10, e)), y: H - B + 15, "text-anchor": "middle", class: "muted" }, "$" + Math.pow(10, e).toPrecision(1).replace(/\.0+$/, ""))); }
+  svg.append(s("text", { x: (L + W - R) / 2, y: H - 6, "text-anchor": "middle", class: "muted" }, "cost per call (USD, log scale)"));
+  svg.append(s("text", { x: 12, y: (T + H - B) / 2, "text-anchor": "middle", class: "muted", transform: `rotate(-90 12 ${(T + H - B) / 2})` }, "quality (0-1)"));
+  names.forEach(n => {
+    const m = sum.models[n], cx = X(cost(n)), cy = Y(m.quality);
+    const g = s("g", { "data-tip": `${label(n)}\nquality ${fmt3(m.quality)} ±${m.qualityCi.toFixed(3)}\ncost/call ${fmtCost(m.costPerCall)}\nmedian latency ${m.latencyMedian.toFixed(2)}s` });
+    g.append(s("line", { x1: cx, x2: cx, y1: Y(Math.min(y1, m.quality + m.qualityCi)), y2: Y(Math.max(y0, m.quality - m.qualityCi)), stroke: colorOf(n), "stroke-width": 1.5, opacity: .6 }));
+    g.append(s("circle", { cx: cx, cy: cy, r: 7, fill: colorOf(n), stroke: "var(--card)", "stroke-width": 2 }));
+    g.append(s("text", { x: Math.min(cx + 10, W - R - 60), y: cy - 9 }, label(n).replace("Claude ", "").replace("Amazon ", "")));
+    svg.append(g);
+  });
+  box.append(svg);
+}
+function renderLatency(sum) {
+  const box = $("latency"); box.replaceChildren();
+  const names = sum.ranking.slice().sort((a, b) => sum.models[a].latencyMedian - sum.models[b].latencyMedian); if (!names.length) return;
+  const W = chartWidth(box), rowH = 34, L = 120, R = 50, T = 8, H = T + names.length * rowH + 24;
+  const max = Math.max(...names.map(n => sum.models[n].latencyP95), 0.001);
+  const X = v => L + v / max * (W - L - R);
+  const svg = s("svg", { viewBox: `0 0 ${W} ${H}`, width: "100%", role: "img", "aria-label": "Median and p95 latency per model" });
+  names.forEach((n, i) => {
+    const m = sum.models[n], y = T + i * rowH;
+    const g = s("g", { "data-tip": `${label(n)}\nmedian ${m.latencyMedian.toFixed(2)}s\np95 ${m.latencyP95.toFixed(2)}s` });
+    g.append(s("text", { x: L - 8, y: y + 20, "text-anchor": "end" }, label(n).replace("Claude ", "").replace("Amazon ", "")));
+    g.append(s("rect", { x: L, y: y + 6, width: Math.max(2, X(m.latencyMedian) - L), height: 18, rx: 3, fill: colorOf(n) }));
+    g.append(s("line", { x1: X(m.latencyP95), x2: X(m.latencyP95), y1: y + 4, y2: y + 26, stroke: "var(--text)", "stroke-width": 2 }));
+    g.append(s("text", { x: X(m.latencyP95) + 6, y: y + 20, class: "muted" }, m.latencyMedian.toFixed(2) + "s"));
+    svg.append(g);
+  });
+  svg.append(s("line", { x1: L, x2: L, y1: T, y2: H - 20, class: "axis" }));
+  svg.append(s("text", { x: L, y: H - 4, class: "muted" }, "0s"));
+  svg.append(s("text", { x: W - R, y: H - 4, "text-anchor": "end", class: "muted" }, max.toFixed(1) + "s"));
+  box.append(svg);
+}
+function renderStack(sum) {
+  const box = $("stack"); box.replaceChildren();
+  const names = sum.ranking; if (!names.length) return;
+  const W = chartWidth(box), rowH = 32, L = 120, R = 60, T = 6, H = T + names.length * rowH + 4;
+  const X = v => L + v * (W - L - R);   // aggregate is within 0..1
+  const svg = s("svg", { viewBox: `0 0 ${W} ${H}`, width: "100%", role: "img", "aria-label": "Aggregate score broken into quality, cost and latency parts" });
+  names.forEach((n, i) => {
+    const m = sum.models[n], y = T + i * rowH;
+    const g = s("g", { "data-tip": `${label(n)}\naggregate ${fmt3(m.aggregate)}\nquality part ${fmt3(m.partQ)}\ncost part ${fmt3(m.partC)}\nlatency part ${fmt3(m.partL)}` });
+    g.append(s("text", { x: L - 8, y: y + 19, "text-anchor": "end" }, label(n).replace("Claude ", "").replace("Amazon ", "")));
+    let x = 0;
+    [[m.partQ, "var(--c-q)"], [m.partC, "var(--c-c)"], [m.partL, "var(--c-l)"]].forEach(([v, c]) => {
+      g.append(s("rect", { x: X(x), y: y + 5, width: Math.max(0, X(x + v) - X(x)), height: 18, fill: c })); x += v;
+    });
+    g.append(s("text", { x: X(x) + 6, y: y + 19 }, fmt3(m.aggregate)));
+    svg.append(g);
+  });
+  box.append(svg);
+}
+function renderHeat(sum) {
+  const t = $("heat"); t.replaceChildren();
+  const names = sum.ranking, winners = categoryWinners(sum, DATA.rules.tieMargin);
+  const head = h("tr", {}, h("th", { scope: "col", text: "Category" }));
+  names.forEach(n => head.append(h("th", { scope: "col", class: "vert" }, modelCell(n))));
+  t.append(h("thead", {}, head));
+  const body = h("tbody");
+  sum.categories.forEach(cat => {
+    const tr = h("tr", {});
+    const th = h("th", { scope: "row", class: "clickable" }, cat + " ");
+    th.style.cursor = "pointer"; th.addEventListener("click", () => { state.category = cat; state.group = "all"; renderAll(); });
+    tr.append(th);
+    names.forEach(n => {
+      const v = sum.categoryScores[n][cat];
+      const td = h("td", { class: "cell" });
+      if (v === undefined) { td.textContent = "-"; }
+      else {
+        td.textContent = v.toFixed(2);
+        td.style.background = `rgba(var(--heat), ${(0.08 + 0.92 * v).toFixed(2)})`;
+        if (v >= 0.55) td.classList.add("hi");
+        if (winners[cat] && winners[cat].winner === n) td.classList.add("win");
+        td.setAttribute("data-tip", `${label(n)} on ${cat}: ${v.toFixed(2)}`);
+      }
+      tr.append(td);
+    });
+    body.append(tr);
+  });
+  t.append(body);
+}
+function renderWinners(sum) {
+  const w = categoryWinners(sum, DATA.rules.tieMargin);
+  const rows = Object.keys(w).map(c => ({ category: c, group: sum.groupOf[c], winner: w[c].winner, quality: w[c].quality, tied: w[c].tied }));
+  const cols = [
+    { key: "category", title: "Category", get: r => r.category },
+    { key: "group", title: "Group", get: r => r.group },
+    { key: "winner", title: "Winner", get: r => label(r.winner), render: r => modelCell(r.winner) },
+    { key: "quality", title: "Quality", num: true, get: r => r.quality, render: r => r.quality.toFixed(2) },
+    { key: "tied", title: "Tied (within " + DATA.rules.tieMargin + ")", get: r => r.tied.length, render: r => r.tied.map(label).join(", ") },
+  ];
+  buildTable($("winTable"), cols, rows, state.sort.win, k => { state.sort.win = k; renderWinners(sum); });
+}
+function renderResults() {
+  const q = state.search.trim().toLowerCase();
+  const rows = filteredRows().filter(r => !q || (r.model + " " + label(r.model) + " " + r.category + " " + r.test + " " + r.response).toLowerCase().includes(q));
+  $("resCount").textContent = "(" + rows.length + " shown; click a row for the prompt, answer, checks and judge reasons)";
+  rows.forEach(r => {
+    r._detailKey = r.model + "|" + r.test;
+    r._detail = () => {
+      const td = h("td", { colspan: 9 });
+      td.append(h("b", { text: "Prompt" }), h("pre", { text: r.prompt }), h("b", { text: "Answer" }), h("pre", { text: r.response || "(" + (r.error || "no text") + ")" }));
+      if (r.checks.length) { td.append(h("b", { text: "Automatic checks" })); td.append(h("pre", { text: r.checks.map(c => (c.score === null ? "skip" : c.score.toFixed(2)) + "  " + c.type + ": " + c.detail).join("\n") })); }
+      const jd = Object.entries(r.judgeDetail);
+      if (jd.length) { td.append(h("b", { text: "Judge" })); td.append(h("pre", { text: jd.map(([j, v]) => label(j) + ": " + v.score + "/5 - " + v.reason).join("\n") + (r.selfJudged ? "\n(self-judged: no other judge was available)" : "") })); }
+      td.append(h("div", { class: "note", text: `tokens in/out ${r.tin}/${r.tout}, stop reason ${r.stop || "-"}${r.cached ? ", served from cache" : ""}` }));
+      return h("tr", { class: "detail" }, td);
+    };
+  });
+  const cols = [
+    { key: "model", title: "Model", get: r => label(r.model), render: r => modelCell(r.model) },
+    { key: "category", title: "Category", get: r => r.category },
+    { key: "test", title: "Test", get: r => r.test },
+    { key: "quality", title: "Quality", num: true, get: r => r.quality, render: r => r.quality === null ? "n/a" : r.quality.toFixed(2) },
+    { key: "auto", title: "Auto", num: true, get: r => r.auto, render: r => r.auto === null ? "-" : r.auto.toFixed(2) },
+    { key: "judge", title: "Judge (1-5)", num: true, get: r => r.judge, render: r => r.judge === null ? "-" : r.judge.toFixed(1) + (r.selfJudged ? "*" : "") },
+    { key: "lat", title: "Latency", num: true, get: r => r.latency, render: r => r.latency.toFixed(2) + "s" },
+    { key: "cost", title: "Cost", num: true, get: r => r.cost, render: r => fmtCost(r.cost) },
+    { key: "flag", title: "Flags", get: r => (r.ok ? "" : "failed ") + (r.stop === "max_tokens" ? "truncated" : ""), render: r => (r.ok ? "" : "failed ") + (r.stop === "max_tokens" ? "truncated" : "") },
+  ];
+  buildTable($("resTable"), cols, rows, state.sort.res, k => { state.sort.res = k; renderResults(); },
+    r => ({ class: "clickable", tabindex: "0", "aria-expanded": state.open.has(r._detailKey) ? "true" : "false",
+            onclick: "toggleRow(this)", "data-key": r._detailKey }));
+}
+window.toggleRow = function (tr) {
+  const k = tr.getAttribute("data-key");
+  if (state.open.has(k)) state.open.delete(k); else state.open.add(k);
+  renderResults();
+};
+
+function renderAll() {
+  renderControls(); renderWeights();
+  const sum = summarize(DATA.rows, state.weights, state.models, catSet());
+  renderKpis(sum); renderRank(sum); renderScatter(sum); renderLatency(sum); renderStack(sum); renderHeat(sum); renderWinners(sum); renderResults();
+}
+
+// ---------- wiring ----------
+(function init() {
+  const m = DATA.meta;
+  $("metaLine").textContent = `${allModels.length} models, ${allCats.length} categories, ${DATA.rows.length} calls. Judge: ${m.judges.join(", ") || "none"}. Estimated spend $${(m.spentUsd || 0).toFixed(2)}. ${m.finishedAt ? "Run finished " + m.finishedAt + "." : ""}`;
+  if (m.mock) $("mockBanner").hidden = false;
+  [["wq", "quality"], ["wc", "cost"], ["wl", "latency"]].forEach(([id, key]) => {
+    $(id).value = Math.round(state.weights[key] * 100);
+    $(id).addEventListener("input", () => { state.weights[key] = Number($(id).value) / 100; renderAll(); });
+  });
+  $("groupSel").addEventListener("change", e => { state.group = e.target.value; state.category = "all"; renderAll(); });
+  $("catSel").addEventListener("change", e => { state.category = e.target.value; renderAll(); });
+  $("resetBtn").addEventListener("click", () => { state.models = new Set(allModels); state.group = "all"; state.category = "all"; state.weights = Object.assign({}, DATA.weights); state.search = ""; $("search").value = ""; ["wq", "wc", "wl"].forEach((id, i) => { $(id).value = Math.round(DATA.weights[["quality", "cost", "latency"][i]] * 100); }); renderAll(); });
+  $("search").addEventListener("input", e => { state.search = e.target.value; renderResults(); });
+  let timer = null;
+  window.addEventListener("resize", () => { clearTimeout(timer); timer = setTimeout(renderAll, 150); });
+  renderAll();
+})();
+</script>
+</body>
+</html>

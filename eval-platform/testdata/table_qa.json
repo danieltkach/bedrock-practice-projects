@@ -1,0 +1,43 @@
+{
+  "category": "table_qa",
+  "group": "structured",
+  "description": "Answer questions by reading a small table (Markdown or CSV).",
+  "tests": [
+    {
+      "prompt": "| Region | Q1 | Q2 | Q3 |\n|---|---|---|---|\n| North | 120 | 135 | 150 |\n| South | 90 | 110 | 95 |\n| East | 140 | 125 | 160 |\n| West | 80 | 100 | 130 |\n\nWhich region had the highest Q3 sales, and what were the total Q2 sales across all regions? End with 'Answer: <region>, <number>'.",
+      "checks": [
+        {
+          "type": "regex",
+          "pattern": "answer:\\s*\\**\\s*East"
+        },
+        {
+          "type": "numeric",
+          "expected": 470
+        }
+      ],
+      "judge": false,
+      "max_tokens": 300,
+      "reference": "Q3 highest is East (160). Q2 total = 135 + 110 + 125 + 100 = 470. Answer: East, 470",
+      "id": "table_qa-1"
+    },
+    {
+      "prompt": "name,department,age\nAna,Engineering,30\nBo,Engineering,40\nCy,Engineering,35\nDi,Marketing,28\nEd,Marketing,52\nFlo,Sales,45\n\nHow many people work in Engineering, and what is their average age? End with 'Answer: <count>, <average age>'.",
+      "checks": [
+        {
+          "type": "regex",
+          "pattern": "answer:\\s*\\**\\s*3\\b"
+        },
+        {
+          "type": "numeric",
+          "expected": 35,
+          "tolerance": 0.01,
+          "position": "last"
+        }
+      ],
+      "judge": false,
+      "max_tokens": 300,
+      "reference": "Engineering has Ana (30), Bo (40) and Cy (35): 3 people, average (30+40+35)/3 = 35. Answer: 3, 35",
+      "id": "table_qa-2"
+    }
+  ]
+}

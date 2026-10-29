@@ -1,0 +1,101 @@
+{
+  "category": "instruction_following",
+  "group": "structured",
+  "description": "Strict format constraints that can be verified by code.",
+  "tests": [
+    {
+      "prompt": "Write exactly three sentences about the ocean. The first sentence must start with the word 'Blue'. Every sentence must have fewer than 15 words. Do not use any commas. Output only the three sentences.",
+      "checks": [
+        {
+          "type": "sentence_count",
+          "value": 3
+        },
+        {
+          "type": "starts_with",
+          "value": "Blue"
+        },
+        {
+          "type": "not_contains",
+          "values": [
+            ","
+          ]
+        },
+        {
+          "type": "max_words_per_sentence",
+          "value": 14
+        }
+      ],
+      "judge": false,
+      "max_tokens": 150,
+      "reference": "Blue water covers most of our planet. Waves roll in and out all day. Many strange creatures live in the deep.",
+      "id": "instruction_following-1"
+    },
+    {
+      "prompt": "List four fruits as a numbered list (1. to 4.), each name in UPPERCASE letters only. Output nothing except the list.",
+      "checks": [
+        {
+          "type": "line_count",
+          "value": 4
+        },
+        {
+          "type": "regex_count",
+          "pattern": "^\\s*\\d\\.\\s+[A-Z ]+$",
+          "count": 4,
+          "case_sensitive": true
+        }
+      ],
+      "judge": false,
+      "max_tokens": 100,
+      "reference": "1. APPLE\n2. BANANA\n3. CHERRY\n4. MANGO",
+      "id": "instruction_following-2"
+    },
+    {
+      "prompt": "Write a four-line poem about a river. Line 1 must start with the letter A, line 2 with B, line 3 with C and line 4 with D. Each line must have at most 8 words. The word 'river' must appear exactly once in the whole poem. Do not use the letter 'z' anywhere. Output only the poem.",
+      "checks": [
+        {
+          "type": "line_count",
+          "value": 4
+        },
+        {
+          "type": "regex",
+          "pattern": "^A",
+          "case_sensitive": true
+        },
+        {
+          "type": "regex",
+          "pattern": "^\\s*B",
+          "case_sensitive": true
+        },
+        {
+          "type": "regex",
+          "pattern": "^\\s*C",
+          "case_sensitive": true
+        },
+        {
+          "type": "regex",
+          "pattern": "^\\s*D",
+          "case_sensitive": true
+        },
+        {
+          "type": "regex_count",
+          "pattern": "\\briver\\b",
+          "count": 1
+        },
+        {
+          "type": "not_contains",
+          "values": [
+            "z"
+          ]
+        },
+        {
+          "type": "max_words",
+          "value": 32
+        }
+      ],
+      "judge": false,
+      "max_tokens": 200,
+      "reference": "A quiet current drifts below the hills.\nBright stones glow under the shallow water.\nCool winds follow the river's bend.\nDawn light spills across the sleepy banks.",
+      "id": "instruction_following-3"
+    }
+  ]
+}

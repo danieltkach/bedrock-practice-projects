@@ -1,0 +1,46 @@
+{
+  "category": "arithmetic",
+  "group": "reasoning",
+  "description": "Multi-operation arithmetic; the final number is checked automatically.",
+  "tests": [
+    {
+      "prompt": "Compute 17 * 24 + 305 - 89. Show brief work, then end with 'Answer: <number>'.",
+      "checks": [
+        {
+          "type": "numeric",
+          "expected": 624
+        }
+      ],
+      "judge": false,
+      "max_tokens": 300,
+      "reference": "17*24 = 408; 408 + 305 = 713; 713 - 89 = 624. Answer: 624",
+      "id": "arithmetic-1"
+    },
+    {
+      "prompt": "What is 15% of 840, plus 2/5 of 250? Show brief work, then end with 'Answer: <number>'.",
+      "checks": [
+        {
+          "type": "numeric",
+          "expected": 226
+        }
+      ],
+      "judge": false,
+      "max_tokens": 300,
+      "reference": "15% of 840 = 126; 2/5 of 250 = 100; total 226. Answer: 226",
+      "id": "arithmetic-2"
+    },
+    {
+      "prompt": "Compute 48,271 x 3,906 exactly. Show your work, then end with 'Answer: <number>'.",
+      "checks": [
+        {
+          "type": "numeric",
+          "expected": 188546526
+        }
+      ],
+      "judge": false,
+      "max_tokens": 700,
+      "reference": "48,271 x 3,906 = 188,546,526. Answer: 188546526",
+      "id": "arithmetic-3"
+    }
+  ]
+}

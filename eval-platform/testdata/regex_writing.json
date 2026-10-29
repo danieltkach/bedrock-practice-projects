@@ -1,0 +1,85 @@
+{
+  "category": "regex_writing",
+  "group": "code",
+  "description": "Write a Python regex; it is tested against must-match and must-not-match strings.",
+  "tests": [
+    {
+      "prompt": "Write a Python regular expression for use with re.fullmatch that matches phone numbers formatted exactly as 555-123-4567 (3 digits, dash, 3 digits, dash, 4 digits). Reply with only the pattern in a ```text block.",
+      "checks": [
+        {
+          "type": "regex_cases",
+          "match": [
+            "555-123-4567",
+            "000-000-0000"
+          ],
+          "no_match": [
+            "5551234567",
+            "555-12-34567",
+            "555-123-456a",
+            "555-123-45678"
+          ]
+        }
+      ],
+      "judge": false,
+      "max_tokens": 150,
+      "reference": "```text\n\\d{3}-\\d{3}-\\d{4}\n```",
+      "id": "regex_writing-1"
+    },
+    {
+      "prompt": "Write a Python regular expression for use with re.fullmatch that matches a time in 24-hour HH:MM format from 00:00 to 23:59 (always two digits for hours and minutes). Reply with only the pattern in a ```text block.",
+      "checks": [
+        {
+          "type": "regex_cases",
+          "match": [
+            "00:00",
+            "23:59",
+            "09:05",
+            "14:30",
+            "19:59"
+          ],
+          "no_match": [
+            "24:00",
+            "12:60",
+            "9:05",
+            "12:5",
+            "7:30",
+            "23:6"
+          ]
+        }
+      ],
+      "judge": false,
+      "max_tokens": 150,
+      "reference": "```text\n([01]\\d|2[0-3]):[0-5]\\d\n```",
+      "id": "regex_writing-2"
+    },
+    {
+      "prompt": "Write a Python regular expression for use with re.fullmatch that matches a valid IPv4 address in dotted decimal form: four numbers from 0 to 255 separated by dots, with no leading zeros (so '0' is valid but '01' is not). Reply with only the pattern in a ```text block.",
+      "checks": [
+        {
+          "type": "regex_cases",
+          "match": [
+            "0.0.0.0",
+            "255.255.255.255",
+            "192.168.1.1",
+            "10.0.0.254",
+            "172.16.31.9"
+          ],
+          "no_match": [
+            "256.1.1.1",
+            "1.2.3",
+            "01.2.3.4",
+            "1.2.3.4.5",
+            "1.2.3.-4",
+            "192.168.1.300",
+            "a.b.c.d",
+            "1.2.3.04"
+          ]
+        }
+      ],
+      "judge": false,
+      "max_tokens": 300,
+      "reference": "```text\n((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.){3}(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\n```",
+      "id": "regex_writing-3"
+    }
+  ]
+}

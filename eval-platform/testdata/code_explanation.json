@@ -1,0 +1,43 @@
+{
+  "category": "code_explanation",
+  "group": "code",
+  "description": "Explain what a short piece of code does and its complexity.",
+  "tests": [
+    {
+      "prompt": "Explain in at most 80 words what this function does and why it is slow for large n:\n\n```python\ndef f(n):\n    return n if n < 2 else f(n - 1) + f(n - 2)\n```",
+      "checks": [
+        {
+          "type": "regex",
+          "pattern": "fibonacci"
+        },
+        {
+          "type": "regex",
+          "pattern": "(exponential|2\\^n|O\\(2|recomput|repeated)"
+        }
+      ],
+      "rubric": "Must identify that it computes the n-th Fibonacci number recursively and explain slowness: exponential time because subproblems are recomputed. Concise (<= 80 words).",
+      "reference": "It computes the n-th Fibonacci number recursively. It is slow because each call spawns two more and the same subproblems are recomputed again and again, giving exponential time; memoization or a loop fixes this.",
+      "max_tokens": 250,
+      "id": "code_explanation-1",
+      "judge": true
+    },
+    {
+      "prompt": "In two or three sentences, explain what this line does:\n\n```python\nresult = sorted(words, key=lambda w: (-len(w), w))\n```",
+      "checks": [
+        {
+          "type": "regex",
+          "pattern": "(longest|descending|length)"
+        },
+        {
+          "type": "regex",
+          "pattern": "(alphabetic|lexicograph|a-z|dictionary)"
+        }
+      ],
+      "rubric": "Must say the words are sorted by length from longest to shortest, and words of equal length are ordered alphabetically; the original list is not modified.",
+      "reference": "It returns a new list of the words sorted by length from longest to shortest. Words with the same length are ordered alphabetically. The original list is left unchanged.",
+      "max_tokens": 200,
+      "id": "code_explanation-2",
+      "judge": true
+    }
+  ]
+}

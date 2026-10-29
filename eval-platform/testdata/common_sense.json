@@ -1,0 +1,37 @@
+{
+  "category": "common_sense",
+  "group": "knowledge",
+  "description": "Everyday physical and social reasoning.",
+  "tests": [
+    {
+      "prompt": "If I leave a sealed, completely full glass bottle of water in the freezer overnight, what is likely to happen and why? Answer in two sentences.",
+      "checks": [
+        {
+          "type": "regex",
+          "pattern": "(crack|burst|break|broke|shatter)"
+        },
+        {
+          "type": "regex",
+          "pattern": "expand"
+        }
+      ],
+      "judge": false,
+      "max_tokens": 150,
+      "reference": "The bottle will probably crack or burst. Water expands as it freezes into ice, and the sealed glass has no room for that extra volume.",
+      "id": "common_sense-1"
+    },
+    {
+      "prompt": "You walk into a dark room that contains a candle, a wood stove and a gas lamp. You have one single match. What do you light first? Answer in one sentence.",
+      "checks": [
+        {
+          "type": "regex",
+          "pattern": "match"
+        }
+      ],
+      "judge": false,
+      "max_tokens": 100,
+      "reference": "The match, because you need a flame before you can light anything else.",
+      "id": "common_sense-2"
+    }
+  ]
+}

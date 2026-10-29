@@ -1,0 +1,89 @@
+{
+  "category": "sql_generation",
+  "group": "code",
+  "description": "Write a SQLite query; it is executed on a small database and the rows are compared.",
+  "tests": [
+    {
+      "prompt": "Tables (SQLite):\ndepartments(id, name)\nemployees(id, name, dept_id, salary)   -- dept_id refers to departments.id\n\nWrite one SQL query that returns the names of employees who work in the 'Sales' department and earn more than 50000, ordered by name. Return only the SQL in a ```sql block.",
+      "checks": [
+        {
+          "type": "sql_result",
+          "setup": [
+            "CREATE TABLE departments (id INTEGER PRIMARY KEY, name TEXT)",
+            "CREATE TABLE employees (id INTEGER PRIMARY KEY, name TEXT, dept_id INTEGER, salary REAL)",
+            "INSERT INTO departments VALUES (1,'Sales'),(2,'Engineering'),(3,'Support')",
+            "INSERT INTO employees VALUES (1,'Ana',2,90000),(2,'Bo',2,80000),(3,'Cy',1,55000),(4,'Di',1,48000),(5,'Ed',1,62000),(6,'Flo',3,40000)"
+          ],
+          "expected": [
+            [
+              "Cy"
+            ],
+            [
+              "Ed"
+            ]
+          ],
+          "ordered": true
+        }
+      ],
+      "judge": false,
+      "max_tokens": 250,
+      "reference": "```sql\nSELECT e.name FROM employees e JOIN departments d ON e.dept_id = d.id WHERE d.name = 'Sales' AND e.salary > 50000 ORDER BY e.name;\n```",
+      "id": "sql_generation-1"
+    },
+    {
+      "prompt": "Tables (SQLite):\ndepartments(id, name)\nemployees(id, name, dept_id, salary)   -- dept_id refers to departments.id\n\nWrite one SQL query that returns each department name and its average salary, only for departments with at least 2 employees. Columns: name, avg_salary. Return only the SQL in a ```sql block.",
+      "checks": [
+        {
+          "type": "sql_result",
+          "setup": [
+            "CREATE TABLE departments (id INTEGER PRIMARY KEY, name TEXT)",
+            "CREATE TABLE employees (id INTEGER PRIMARY KEY, name TEXT, dept_id INTEGER, salary REAL)",
+            "INSERT INTO departments VALUES (1,'Sales'),(2,'Engineering'),(3,'Support')",
+            "INSERT INTO employees VALUES (1,'Ana',2,90000),(2,'Bo',2,80000),(3,'Cy',1,55000),(4,'Di',1,48000),(5,'Ed',1,62000),(6,'Flo',3,40000)"
+          ],
+          "expected": [
+            [
+              "Engineering",
+              85000
+            ],
+            [
+              "Sales",
+              55000
+            ]
+          ]
+        }
+      ],
+      "judge": false,
+      "max_tokens": 250,
+      "reference": "```sql\nSELECT d.name, AVG(e.salary) AS avg_salary FROM employees e JOIN departments d ON e.dept_id = d.id GROUP BY d.id, d.name HAVING COUNT(*) >= 2;\n```",
+      "id": "sql_generation-2"
+    },
+    {
+      "prompt": "Tables (SQLite):\ndepartments(id, name)\nemployees(id, name, dept_id, salary)   -- dept_id refers to departments.id\n\nWrite one SQL query that returns the names of employees who earn STRICTLY more than the average salary of their own department, ordered by name. Return only the SQL in a ```sql block.",
+      "checks": [
+        {
+          "type": "sql_result",
+          "setup": [
+            "CREATE TABLE departments (id INTEGER PRIMARY KEY, name TEXT)",
+            "CREATE TABLE employees (id INTEGER PRIMARY KEY, name TEXT, dept_id INTEGER, salary REAL)",
+            "INSERT INTO departments VALUES (1,'Sales'),(2,'Engineering'),(3,'Support')",
+            "INSERT INTO employees VALUES (1,'Ana',2,90000),(2,'Bo',2,80000),(3,'Cy',1,55000),(4,'Di',1,48000),(5,'Ed',1,62000),(6,'Flo',3,40000)"
+          ],
+          "expected": [
+            [
+              "Ana"
+            ],
+            [
+              "Ed"
+            ]
+          ],
+          "ordered": true
+        }
+      ],
+      "judge": false,
+      "max_tokens": 300,
+      "reference": "```sql\nSELECT e.name FROM employees e WHERE e.salary > (SELECT AVG(salary) FROM employees WHERE dept_id = e.dept_id) ORDER BY e.name;\n```",
+      "id": "sql_generation-3"
+    }
+  ]
+}

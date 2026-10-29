@@ -1,0 +1,43 @@
+{
+  "category": "classification",
+  "group": "structured",
+  "description": "Assign labels to short texts; output is a JSON array of labels.",
+  "tests": [
+    {
+      "prompt": "Classify the sentiment of each review as exactly one of: positive, negative, neutral. Output only a JSON array of four strings, in order.\n1. Absolutely loved it, will buy again!\n2. Arrived broken and support never replied.\n3. It works. Nothing special.\n4. Not worth the price, I am returning it.",
+      "checks": [
+        {
+          "type": "json_fields",
+          "expected": [
+            "positive",
+            "negative",
+            "neutral",
+            "negative"
+          ]
+        }
+      ],
+      "judge": false,
+      "max_tokens": 100,
+      "reference": "[\"positive\", \"negative\", \"neutral\", \"negative\"]",
+      "id": "classification-1"
+    },
+    {
+      "prompt": "Classify each support ticket as exactly one of: billing, technical, account, other. Output only a JSON array of four strings, in order.\n1. I was charged twice this month.\n2. The app crashes when I open settings.\n3. How do I change the email address on my profile?\n4. Do you sell gift cards?",
+      "checks": [
+        {
+          "type": "json_fields",
+          "expected": [
+            "billing",
+            "technical",
+            "account",
+            "other"
+          ]
+        }
+      ],
+      "judge": false,
+      "max_tokens": 100,
+      "reference": "[\"billing\", \"technical\", \"account\", \"other\"]",
+      "id": "classification-2"
+    }
+  ]
+}

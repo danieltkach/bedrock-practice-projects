@@ -1,0 +1,53 @@
+{
+  "category": "json_extraction",
+  "group": "structured",
+  "description": "Pull structured data out of free text as valid JSON.",
+  "tests": [
+    {
+      "prompt": "Extract the data from this message as a JSON object with keys name, amount (number), currency, due_date (YYYY-MM-DD). Output only JSON.\n\nMESSAGE: Hello, this is a reminder that Orla Fenn needs to pay 1,250.50 EUR by 2025-03-14 for the workshop booking. Thanks!",
+      "checks": [
+        {
+          "type": "json_fields",
+          "expected": {
+            "name": "Orla Fenn",
+            "amount": 1250.5,
+            "currency": "EUR",
+            "due_date": "2025-03-14"
+          }
+        }
+      ],
+      "judge": false,
+      "max_tokens": 200,
+      "reference": "{\"name\": \"Orla Fenn\", \"amount\": 1250.5, \"currency\": \"EUR\", \"due_date\": \"2025-03-14\"}",
+      "id": "json_extraction-1"
+    },
+    {
+      "prompt": "Extract every product and price from the text as JSON: {\"items\": [{\"name\": string, \"price\": number}, ...]} in the order they appear. Output only JSON.\n\nTEXT: Today's specials are the garden salad for $7.50, a mushroom soup for $5, and the lemon tart at $4.25.",
+      "checks": [
+        {
+          "type": "json_fields",
+          "expected": {
+            "items": [
+              {
+                "name": "garden salad",
+                "price": 7.5
+              },
+              {
+                "name": "mushroom soup",
+                "price": 5
+              },
+              {
+                "name": "lemon tart",
+                "price": 4.25
+              }
+            ]
+          }
+        }
+      ],
+      "judge": false,
+      "max_tokens": 250,
+      "reference": "{\"items\": [{\"name\": \"garden salad\", \"price\": 7.5}, {\"name\": \"mushroom soup\", \"price\": 5}, {\"name\": \"lemon tart\", \"price\": 4.25}]}",
+      "id": "json_extraction-2"
+    }
+  ]
+}

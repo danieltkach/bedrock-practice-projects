@@ -1,0 +1,46 @@
+{
+  "category": "logic_puzzles",
+  "group": "reasoning",
+  "description": "Small deduction puzzles with one correct answer.",
+  "tests": [
+    {
+      "prompt": "Premises: All bloops are razzies. All razzies are lazzies. Some lazzies are tazzies.\nWhich statement MUST be true?\n(A) All bloops are lazzies\n(B) Some bloops are tazzies\n(C) All tazzies are bloops\nThink briefly, then end with 'Answer: <letter>'.",
+      "checks": [
+        {
+          "type": "regex",
+          "pattern": "answer:\\s*[*<(\\[]*\\s*A\\b"
+        }
+      ],
+      "judge": false,
+      "max_tokens": 500,
+      "reference": "Bloops are razzies and razzies are lazzies, so all bloops are lazzies. Answer: A",
+      "id": "logic_puzzles-1"
+    },
+    {
+      "prompt": "Ann, Bob and Cy have three different jobs: pilot, chef, doctor. Ann is not the pilot. Bob is neither the pilot nor the doctor. Who is the pilot? Think briefly, then end with 'Answer: <name>'.",
+      "checks": [
+        {
+          "type": "regex",
+          "pattern": "answer:\\s*[*<(\\[]*\\s*Cy\\b"
+        }
+      ],
+      "judge": false,
+      "max_tokens": 500,
+      "reference": "Bob is not pilot or doctor, so Bob is the chef. Ann is not the pilot, so Cy is the pilot. Answer: Cy",
+      "id": "logic_puzzles-2"
+    },
+    {
+      "prompt": "Five people A, B, C, D and E sit in a row of five seats (seat 1 is the far left). Clues:\n- A is somewhere to the left of B\n- C is not next to D\n- E is at one of the two ends\n- B is exactly two seats to the right of D\n- A is not at either end\n- D is not at either end\nWho sits in seat 1 through seat 5? Think carefully, then end with 'Answer: <five letters, seat 1 to seat 5>'.",
+      "checks": [
+        {
+          "type": "regex",
+          "pattern": "answer:\\s*[*<(\\[]*\\s*E[\\s,\\-]*D[\\s,\\-]*A[\\s,\\-]*B[\\s,\\-]*C"
+        }
+      ],
+      "judge": false,
+      "max_tokens": 1500,
+      "reference": "Checking all arrangements against the clues leaves exactly one. Answer: EDABC",
+      "id": "logic_puzzles-3"
+    }
+  ]
+}

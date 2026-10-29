@@ -1,0 +1,47 @@
+{
+  "category": "translation",
+  "group": "language",
+  "description": "Translate short texts accurately, keeping numbers and meaning.",
+  "tests": [
+    {
+      "prompt": "Translate into Spanish: 'The meeting has been moved to Thursday at 3 pm; please bring your laptop.'",
+      "checks": [
+        {
+          "type": "regex",
+          "pattern": "jueves"
+        },
+        {
+          "type": "regex",
+          "pattern": "(3|tres)"
+        }
+      ],
+      "rubric": "Correct, natural Spanish that keeps all facts (meeting moved, Thursday, 3 pm, bring laptop). Minor stylistic variation is fine. Penalize extra commentary only mildly.",
+      "reference": "La reunión se ha cambiado al jueves a las 3 pm; por favor, traiga su portátil.",
+      "max_tokens": 400,
+      "id": "translation-1",
+      "judge": true
+    },
+    {
+      "prompt": "Translate into English: 'Je voudrais réserver une table pour quatre personnes ce soir à vingt heures.'",
+      "checks": [
+        {
+          "type": "regex",
+          "pattern": "\\bfour\\b"
+        },
+        {
+          "type": "regex",
+          "pattern": "(tonight|this evening)"
+        },
+        {
+          "type": "regex",
+          "pattern": "(8|eight)"
+        }
+      ],
+      "rubric": "Accurate English that keeps: reserve a table, four people, tonight, at 8 o'clock (8 pm / 20:00).",
+      "reference": "I would like to book a table for four people tonight at eight o'clock.",
+      "max_tokens": 400,
+      "id": "translation-2",
+      "judge": true
+    }
+  ]
+}

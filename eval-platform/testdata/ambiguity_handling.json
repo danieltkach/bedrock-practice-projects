@@ -1,0 +1,35 @@
+{
+  "category": "ambiguity_handling",
+  "group": "knowledge",
+  "description": "Underspecified requests: a good model asks a short clarifying question instead of guessing.",
+  "tests": [
+    {
+      "prompt": "Send the report to John.",
+      "checks": [
+        {
+          "type": "regex",
+          "pattern": "\\?"
+        }
+      ],
+      "rubric": "The request lacks context (which report? which John? how to send? the assistant has no tools). A top answer asks one or two short clarifying questions. Inventing details or pretending to have sent it is a score of 1-2.",
+      "reference": "Could you tell me which report you mean and which John (and his email address) it should go to? I can't send files myself, but I can draft the message.",
+      "max_tokens": 400,
+      "id": "ambiguity_handling-1",
+      "judge": true
+    },
+    {
+      "prompt": "Is it safe to take it together with alcohol?",
+      "checks": [
+        {
+          "type": "regex",
+          "pattern": "\\?"
+        }
+      ],
+      "rubric": "'It' is undefined (which medication or substance?). A top answer asks what 'it' refers to, optionally adding a brief general caution. Naming a specific drug without being told is a score of 1-2.",
+      "reference": "What is 'it' - which medication or substance do you mean? Mixing many medicines with alcohol can be risky, so please tell me which one and check with a pharmacist.",
+      "max_tokens": 400,
+      "id": "ambiguity_handling-2",
+      "judge": true
+    }
+  ]
+}

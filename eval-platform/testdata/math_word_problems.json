@@ -1,0 +1,48 @@
+{
+  "category": "math_word_problems",
+  "group": "reasoning",
+  "description": "Word problems that need translating text into arithmetic.",
+  "tests": [
+    {
+      "prompt": "A train leaves a station at 9:00 travelling at 80 km/h. A second train leaves the same station at 10:30 on the same track travelling at 120 km/h. At what time does the second train catch up with the first? Think step by step, then end with 'Answer: HH:MM'.",
+      "checks": [
+        {
+          "type": "regex",
+          "pattern": "answer:\\s*[*<(\\[]*\\s*(13:30|1:30\\s*p\\.?m)"
+        }
+      ],
+      "judge": false,
+      "max_tokens": 500,
+      "reference": "At 10:30 the first train is 120 km ahead. The second gains 40 km/h, so it needs 3 hours. Answer: 13:30",
+      "id": "math_word_problems-1"
+    },
+    {
+      "prompt": "Pens cost $1.20 each. A shop gives a 10% discount on the whole bill when a customer buys 10 or more pens. A customer buys 15 pens and pays with a $50 bill. How much change do they get? Think step by step, then end with 'Answer: <amount in dollars>'.",
+      "checks": [
+        {
+          "type": "numeric",
+          "expected": 33.8,
+          "tolerance": 0.01
+        }
+      ],
+      "judge": false,
+      "max_tokens": 500,
+      "reference": "15 x 1.20 = 18.00; 10% discount leaves 16.20; change = 50 - 16.20 = 33.80. Answer: 33.80",
+      "id": "math_word_problems-2"
+    },
+    {
+      "prompt": "A tank is filled by pipe A alone in 6 hours, or by pipe B alone in 4 hours. A drain C would empty a full tank alone in 12 hours. Pipe A is opened at time 0. Pipe B is opened at hour 1. Drain C is opened at hour 2. Nothing else changes. At what time (in hours after time 0) is the empty tank completely full? Think step by step, then end with 'Answer: <number of hours>'.",
+      "checks": [
+        {
+          "type": "numeric",
+          "expected": 3.25,
+          "tolerance": 0.01
+        }
+      ],
+      "judge": false,
+      "max_tokens": 900,
+      "reference": "By hour 1: 1/6. Hours 1-2: A+B = 5/12, total 7/12. After hour 2 the net rate is 1/6+1/4-1/12 = 1/3 per hour; the remaining 5/12 takes 1.25 h. Answer: 3.25",
+      "id": "math_word_problems-3"
+    }
+  ]
+}

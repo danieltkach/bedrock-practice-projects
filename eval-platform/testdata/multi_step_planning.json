@@ -1,0 +1,54 @@
+{
+  "category": "multi_step_planning",
+  "group": "reasoning",
+  "description": "Produce an ordered plan or schedule that respects constraints.",
+  "tests": [
+    {
+      "prompt": "Plan the steps to move a small website from shared hosting to a cloud virtual machine with minimal downtime. Give exactly 6 numbered steps (format '1. ...'), each under 20 words. No other text.",
+      "checks": [
+        {
+          "type": "regex_count",
+          "pattern": "^\\s*\\d+[.)]\\s+",
+          "count": 6
+        },
+        {
+          "type": "max_words",
+          "value": 140
+        }
+      ],
+      "rubric": "A sensible, correctly ordered migration plan: prepare the VM, copy files/data, test on the new server, lower DNS TTL beforehand, switch DNS, monitor and keep the old host until stable. Exactly 6 short steps.",
+      "reference": "1. Provision and secure the cloud VM.\n2. Lower the DNS TTL a day in advance.\n3. Copy site files and database to the VM.\n4. Test the site on the VM using its IP.\n5. Switch DNS to the VM and monitor.\n6. Keep the old host for a few days, then cancel it.",
+      "max_tokens": 300,
+      "id": "multi_step_planning-1",
+      "judge": true
+    },
+    {
+      "prompt": "One worker has 7 hours and four tasks: A (2h) must be done before C; B (1h); C (3h); D (1h) must be done after B. Give a valid order that finishes all tasks. End with a line 'Order: X, Y, Z, W' using the task letters.",
+      "checks": [
+        {
+          "type": "order",
+          "items": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "before": [
+            [
+              "A",
+              "C"
+            ],
+            [
+              "B",
+              "D"
+            ]
+          ]
+        }
+      ],
+      "judge": false,
+      "max_tokens": 600,
+      "reference": "Total time is 2+1+3+1 = 7 hours, which fits exactly. Order: A, B, C, D",
+      "id": "multi_step_planning-2"
+    }
+  ]
+}

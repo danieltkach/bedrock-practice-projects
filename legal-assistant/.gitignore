@@ -1,0 +1,6 @@
+.venv/
+__pycache__/
+*.log
+# Large and reproducible: regenerate with ./run.sh download and ./run.sh ingest
+data/
+indexes/

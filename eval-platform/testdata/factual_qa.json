@@ -1,0 +1,39 @@
+{
+  "category": "factual_qa",
+  "group": "knowledge",
+  "description": "Short factual questions with a single verifiable answer.",
+  "tests": [
+    {
+      "prompt": "What is the chemical symbol for gold, and what is its atomic number? Answer in one sentence.",
+      "checks": [
+        {
+          "type": "contains",
+          "values": [
+            "Au",
+            "79"
+          ]
+        }
+      ],
+      "judge": false,
+      "max_tokens": 150,
+      "reference": "The chemical symbol for gold is Au and its atomic number is 79.",
+      "id": "factual_qa-1"
+    },
+    {
+      "prompt": "Who wrote the novel 'Pride and Prejudice', and in what year was it first published? Answer in one sentence.",
+      "checks": [
+        {
+          "type": "contains",
+          "values": [
+            "Austen",
+            "1813"
+          ]
+        }
+      ],
+      "judge": false,
+      "max_tokens": 150,
+      "reference": "Jane Austen wrote 'Pride and Prejudice', first published in 1813.",
+      "id": "factual_qa-2"
+    }
+  ]
+}

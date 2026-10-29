@@ -1,0 +1,35 @@
+{
+  "category": "legal_clause_explanation",
+  "group": "language",
+  "description": "Explain INVENTED contract clauses in plain English and compute from them (not legal advice).",
+  "tests": [
+    {
+      "prompt": "Use only the clause below.\n\nCLAUSE 7.2 (Late Delivery): If Supplier fails to deliver conforming goods within ten (10) business days after the Delivery Date, Buyer may, at its sole option, (a) terminate the affected purchase order without penalty, or (b) require a credit of two percent (2%) of the order value for each full week of delay, capped at fifteen percent (15%) of the order value.\n\nIn under 100 words, explain the clause to a small-business owner. Then compute the credit for a $10,000 order delivered 3 full weeks late (after the grace period). End with 'Answer: <dollars>'.",
+      "checks": [
+        {
+          "type": "numeric",
+          "expected": 600
+        }
+      ],
+      "rubric": "Plain-English explanation covering: 10-business-day grace period, buyer chooses between cancelling or a credit, 2% per full week, 15% cap. Correct credit: 3 weeks x 2% of $10,000 = $600. Under 100 words before the answer line. Uses only the clause.",
+      "reference": "After a 10-business-day grace period, the buyer can either cancel the order without penalty or demand a credit of 2% of the order value for each full week of delay, up to a 15% maximum. For 3 weeks on $10,000: 6% = $600. Answer: 600",
+      "max_tokens": 350,
+      "id": "legal_clause_explanation-1",
+      "judge": true
+    },
+    {
+      "prompt": "Use only the clause below.\n\nCLAUSE 12 (Limitation of Liability): Neither party shall be liable for indirect or consequential damages. Each party's total aggregate liability under this Agreement shall not exceed the fees paid by Customer in the twelve (12) months preceding the claim. This clause does not limit liability for fraud or willful misconduct.\n\nCustomer pays $4,000 per month and has paid for 18 months. It claims $90,000 of direct losses caused by an ordinary software error (no fraud). Explain in two or three sentences what the vendor could owe at most, and end with 'Answer: <dollars>'.",
+      "checks": [
+        {
+          "type": "numeric",
+          "expected": 48000
+        }
+      ],
+      "rubric": "Correctly applies the cap: fees paid in the previous 12 months = 12 x $4,000 = $48,000 maximum, not $90,000 and not 18 months of fees. Notes the fraud exception is not relevant. Two or three sentences.",
+      "reference": "Liability is capped at the fees paid in the 12 months before the claim: 12 x $4,000 = $48,000. The fraud exception does not apply to an ordinary error, so the vendor owes at most $48,000. Answer: 48000",
+      "max_tokens": 300,
+      "id": "legal_clause_explanation-2",
+      "judge": true
+    }
+  ]
+}
