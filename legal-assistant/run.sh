@@ -3,7 +3,8 @@
 #   ./run.sh setup      create the virtualenv and install dependencies
 #   ./run.sh download   fetch the public Supreme Court PDFs into data/
 #   ./run.sh ingest     build both search indexes (calls Bedrock; takes a few minutes)
-#   ./run.sh chat       start the assistant
+#   ./run.sh chat       start the assistant in the terminal
+#   ./run.sh web        start the web interface at http://127.0.0.1:7860
 #   ./run.sh all        setup + download + ingest + chat
 set -euo pipefail
 cd "$(dirname "$0")"
@@ -31,6 +32,7 @@ case "${1:-}" in
             "$PY" ingest.py opinions data/opinions
             "$PY" ingest.py transcripts data/transcripts ;;
   chat)     check_aws; "$PY" assistant.py ;;
+  web)      check_aws; "$PY" app.py ;;
   all)      setup; "$0" download; "$0" ingest; "$0" chat ;;
-  *)        sed -n '2,7p' "$0"; exit 1 ;;
+  *)        sed -n '2,8p' "$0"; exit 1 ;;
 esac

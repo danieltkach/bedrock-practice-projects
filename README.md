@@ -4,7 +4,7 @@ Three projects built on Amazon Bedrock, each complete with tests, documentation 
 
 | # | Project | What it does | Folder |
 |---|---|---|---|
-| 1 | **Legal Assistant with RAG** | Answers questions about 250 real U.S. Supreme Court PDFs with exact file/page citations, remembers the conversation, and writes executive summaries | [`legal-assistant/`](legal-assistant/) |
+| 1 | **Legal Assistant with RAG** | Answers questions about 250 real U.S. Supreme Court PDFs with exact file/page citations, remembers the conversation, and writes executive summaries; terminal and web (Gradio) interfaces | [`legal-assistant/`](legal-assistant/) |
 | 2 | **Multi-Agent System** | A coordinator plans a query, routes subtasks to specialist agents (analysis, writing, code) running in parallel, and merges the results, reporting cost and latency | [`multi-agent/`](multi-agent/) |
 | 3 | **Evaluation Platform** | Benchmarks 6 models across 25 test categories on quality, cost and latency, then produces a ranking, recommendations, a Markdown report and an interactive HTML dashboard | [`eval-platform/`](eval-platform/) |
 
@@ -41,6 +41,7 @@ Prerequisites:
 aws login --remote --region us-east-1     # short-lived credentials, valid up to 12 hours
 
 ./run.sh legal-assistant all              # setup + download PDFs + build indexes + chat (several minutes)
+./run.sh legal-assistant web              # afterwards: web interface at http://127.0.0.1:7860
 ./run.sh multi-agent chat                 # after: ./run.sh multi-agent setup
 ./run.sh eval-platform plan               # dry run: shows number of calls and estimated cost
 ./run.sh eval-platform run                # live run, with a hard budget cap (default about $3)

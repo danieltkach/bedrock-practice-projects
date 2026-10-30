@@ -99,6 +99,17 @@ Why a page never gets mixed with another: so each citation points at a real, sin
 - `a @ b` is matrix multiplication in NumPy.
 - `.venv` is an isolated folder of installed packages for this project.
 
+### The web interface, `app.py`
+
+A thin layer on top of the same functions: it adds no new retrieval or prompting logic.
+- `respond(message, history, selected)` runs one turn: picks the checked indexes, converts the chat history to plain
+  role/text messages, calls `assistant.answer`, and returns the updated chat and a sources panel.
+- `summarize_file(name)` calls `assistant.summarize` for the chosen opinion.
+- Errors (for example expired AWS credentials) are shown in the chat instead of crashing the page.
+- Gotcha found while testing: Gradio 6 returns each past message's content as a list of blocks
+  (`[{'text': ..., 'type': 'text'}]`) and not as a string. A first version silently dropped the conversation memory
+  because of that; `message_text()` handles both forms. Lesson: test the integration seam, not only your own functions.
+
 ---
 
 ## 5. A real example, traced

@@ -15,6 +15,7 @@ cite the exact file and page for every claim.
 | Conversational interface | Keeps the last 6 messages; rewrites follow-ups ("and the dissent?") into standalone search queries |
 | Precise citations | Each answer cites `[n]`; a source list gives file name, page, and index |
 | Executive summaries | `/summary <file name part>`: summarizes each section, then merges them (map-reduce) |
+| Web interface | Gradio app (`./run.sh web`): chat with index selector, source panel, and an executive-summary tab |
 | Scale | 100+ documents per index (see "Dataset") |
 
 ## Architecture
@@ -49,12 +50,20 @@ aws login --remote --region us-east-1   # or any other way to get AWS credential
 ./run.sh setup       # virtualenv + dependencies
 ./run.sh download    # ~250 public PDFs into data/ (about 120 MB)
 ./run.sh ingest      # builds both indexes (a few minutes; Bedrock embedding calls)
-./run.sh chat        # start the assistant
+./run.sh chat        # start the assistant in the terminal
+./run.sh web         # or the web interface at http://127.0.0.1:7860
 ```
 
 Or everything in one go: `./run.sh all`.
 
-### Using the assistant
+### Web interface
+
+`./run.sh web` starts a local Gradio app at http://127.0.0.1:7860 (not exposed to the network). The **Ask questions** tab
+has checkboxes to choose which indexes to search, the conversation, and a panel listing the sources of the last answer.
+The **Executive summary** tab summarizes any downloaded opinion. It uses exactly the same code as the terminal assistant
+(`assistant.py`), so both behave identically.
+
+### Using the terminal assistant
 
 ```
 you> What did the Court decide about standing for a tester who sues hotels over website accessibility?
@@ -72,6 +81,7 @@ you> /quit
 rag.py                    shared logic: PDF reading, chunking, embeddings, vector search
 ingest.py                 builds one index from a folder of PDFs
 assistant.py              chat loop, retrieval, prompts, citations, summaries
+app.py                    Gradio web interface (reuses assistant.py)
 download_opinions.py      fetches opinions from supremecourt.gov
 download_transcripts.py   fetches argument transcripts from supremecourt.gov
 run.sh                    single entry point (setup / download / ingest / chat)
@@ -115,7 +125,7 @@ All knobs are constants at the top of `rag.py` and `assistant.py`:
 | Index lives in two flat files and is loaded fully into memory | Move to OpenSearch Serverless, pgvector, or Bedrock Knowledge Bases for larger corpora |
 | Scanned PDFs without a text layer produce no text | Add OCR (e.g. Amazon Textract) |
 | No automated quality checks | Build a small question/expected-page test set and measure retrieval hit rate |
-| Command-line only | Gradio or Streamlit web front end (workbook Practice 6 suggests Gradio) |
+| The web interface is single-user and local | Authentication, per-user conversation storage, and deployment behind a managed host |
 | Credentials expire (`aws login` lasts up to 12 h) | Use an IAM role when deploying; add retry/backoff for throttling |
 | Runs on one machine | Containerize (Docker) with credentials supplied by environment/role, once deployed beyond a laptop |
 
@@ -127,6 +137,7 @@ All knobs are constants at the top of `rag.py` and `assistant.py`:
 | `Using the login credential provider requires ... botocore[crt]` | `pip install "botocore[crt]"` (already in `requirements.txt`) |
 | `NoRegionError` | `aws configure set region us-east-1` or `export AWS_DEFAULT_REGION=us-east-1` |
 | `Your session has expired` | `aws login --remote --region us-east-1` |
+| Web page shows "Sorry, the request failed: ... reauthenticate" | The AWS session expired; run `aws login --remote --region us-east-1` and ask again (no restart needed) |
 | `KeyError: 'text'` from a Claude 5.x model | Those models think first and may spend a small `maxTokens` budget on reasoning; use a model that doesn't (Haiku 4.5) or raise the budget |
 
 ## Dataset
